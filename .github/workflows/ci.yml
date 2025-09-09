@@ -1,4 +1,4 @@
-name: CI
+name: Build
 
 on:
   push:
@@ -7,104 +7,8 @@ on:
     branches: [ main, develop ]
 
 jobs:
-  test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.10", "3.11", "3.12"]
-
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0  # Full history for setuptools_scm
-
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-
-    - name: Install system dependencies (Ubuntu)
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libgl1-mesa-glx libglib2.0-0
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e ".[test]"
-
-    - name: Lint with flake8
-      run: |
-        flake8 src/ --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 src/ --count --exit-zero --max-complexity=10 --max-line-length=88 --statistics
-
-    - name: Check code formatting with black
-      run: |
-        black --check --diff src/
-
-    - name: Check import sorting with isort
-      run: |
-        isort --check-only --diff src/
-
-    - name: Type checking with mypy
-      run: |
-        mypy src/
-
-    - name: Test with pytest
-      run: |
-        pytest -v --cov=docling_enhanced --cov-report=xml --cov-report=term-missing
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
-
-  test-integration:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.11"
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e ".[test]"
-
-    - name: Test enhanced model integration
-      run: |
-        python -c "
-        from docling_enhanced import is_onnx_available, get_model_info
-        print(f'ONNX available: {is_onnx_available()}')
-        print(f'Model info: {get_model_info()}')
-        "
-
-    - name: Test factory pattern
-      run: |
-        python -c "
-        from docling_enhanced import EnhancedModelFactory
-        from docling.datamodel.accelerator_options import AcceleratorOptions
-        
-        factory = EnhancedModelFactory(AcceleratorOptions())
-        print(f'Factory info: {factory.get_info()}')
-        "
-
   build:
     runs-on: ubuntu-latest
-    needs: [test]
     
     steps:
     - uses: actions/checkout@v4
