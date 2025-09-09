@@ -41,7 +41,6 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     "docling>=2.0.0",
-    "docling-onnx-models>=1.0.0",
     "onnxruntime>=1.15.0",
     "numpy>=1.21.0",
     "pillow>=8.3.0",
@@ -70,6 +69,15 @@ gpu = [
     "onnxruntime-gpu>=1.15.0",
 ]
 
+onnx = [
+    "docling-onnx-models>=1.0.0",
+]
+
+full = [
+    "docling-onnx-models>=1.0.0",
+    "onnxruntime-gpu>=1.15.0",
+]
+
 [project.urls]
 Homepage = "https://github.com/asmud/docling"
 Documentation = "https://github.com/asmud/docling#readme"
@@ -78,8 +86,11 @@ Issues = "https://github.com/asmud/docling/issues"
 Changelog = "https://github.com/asmud/docling/blob/main/CHANGELOG.md"
 
 [tool.setuptools]
-packages = ["docling_enhanced"]
 package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["docling_enhanced*"]
 
 [tool.setuptools.package-data]
 docling_enhanced = ["py.typed"]
